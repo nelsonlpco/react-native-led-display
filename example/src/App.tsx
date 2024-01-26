@@ -1,18 +1,39 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-led-display';
+import { Button, StyleSheet, View } from 'react-native';
+import { NumericLedDisplay } from 'react-native-led-display';
+
+let interval: NodeJS.Timeout;
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const [second, setTime] = useState(0);
+  const [started, setStarted] = useState(false);
 
-  React.useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
+  useEffect(() => {
+    if (!started) {
+      setTime(0);
+      if (interval) clearInterval(interval);
+    } else {
+      interval = setInterval(() => {
+        if (second > 8) {
+          setTime(() => 0);
+        } else {
+          setTime((currentSecond) => currentSecond + 1);
+        }
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [started, second]);
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Button
+        title={started ? 'Stop' : 'Start'}
+        onPress={() => setStarted((started) => !started)}
+      />
+      <NumericLedDisplay width={200} digite={second} />
     </View>
   );
 }
